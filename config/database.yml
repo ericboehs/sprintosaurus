@@ -81,9 +81,10 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    host: <%= ENV["DB_HOST"] %>
     database: sprintosaurus_production
     username: sprintosaurus
-    password: <%= ENV["SPRINTOSAURUS_DATABASE_PASSWORD"] %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: sprintosaurus_production_cache

@@ -1,24 +1,5 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Deployment with Kamal 2
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Once I had created my VMs and set up my SSH keys, I ran `kamal setup -d staging` followed by a `kamal deploy -d staging`. Same thing for production. I also configured CloudFlare and turned CloudFlare's Proxy off for each subdomain.
