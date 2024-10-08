@@ -4,24 +4,6 @@ service: sprintosaurus
 # Name of the container image.
 image: ericboehs/sprintosaurus
 
-# Deploy to these servers.
-servers:
-  web:
-    - 192.210.167.222
-  # job:
-  #   hosts:
-  #     - 192.168.0.1
-  #   cmd: bin/jobs
-
-# Enable SSL auto certification via Let's Encrypt (and allow for multiple apps on one server).
-# If using something like Cloudflare, it is recommended to set encryption mode 
-# in Cloudflare's SSL/TLS setting to "Full" to enable end-to-end encryption. 
-proxy: 
-  ssl: true
-  host: staging.sprintosaurus.com
-  # kamal-proxy connects to your container over port 80, use `app_port` to specify a different port.
-  # app_port: 3000
-
 # Credentials for your image host.
 registry:
   # Specify the registry server, if you're not using Docker Hub
@@ -37,7 +19,6 @@ builder:
   arch: amd64
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
-#
 env:
   clear:
     DB_HOST: sprintosaurus-db
@@ -47,12 +28,10 @@ env:
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal logs -r job" will tail logs from the first server in the job section.
-#
-# aliases:
-#   shell: app exec --interactive --reuse "bash"
+aliases:
+  shell: app exec --interactive --reuse "bash"
 
 # Use a different ssh user than root
-#
 # ssh:
 #   user: app
 
@@ -66,13 +45,11 @@ volumes:
 asset_path: /rails/public/assets
 
 # Configure rolling deploys by setting a wait time between batches of restarts.
-#
-# boot:
-#   limit: 10 # Can also specify as a percentage of total hosts, such as "25%"
-#   wait: 2
+boot:
+  limit: 10 # Can also specify as a percentage of total hosts, such as "25%"
+  wait: 2
 
 # Use accessory services (secrets come from .kamal/secrets).
-#
 accessories:
   db:
     image: postgres:17
@@ -84,13 +61,5 @@ accessories:
         POSTGRES_DB: "sprintosaurus_production"
       secret:
         - POSTGRES_PASSWORD
-    files:
-      - db/init.sql:/docker-entrypoint-initdb.d/setup.sql
     directories:
       - data:/var/lib/postgresql/data
-#   redis:
-#     image: redis:7.0
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data

@@ -1,0 +1,61 @@
+#! /usr/bin/env bash
+
+### This script didn't end up working out so I just manually ran the steps here.
+
+# Check if an IP address was provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <ip_address>"
+    exit 1
+fi
+
+# Get the IP address from the first argument
+ip_address=$1
+
+# Run ssh-copy-id to copy the SSH key to the root user
+if ssh -o BatchMode=yes -o ConnectTimeout=5 root@$ip_address exit &>/dev/null; then
+    echo "SSH key-based authentication already set up for root@$ip_address"
+else
+    # Prompt for password
+    read -sp "Enter root password for $ip_address: " ROOT_PASS
+    echo
+
+    # Use sshpass to provide the password to ssh-copy-id
+    if sshpass -p "$ROOT_PASS" ssh-copy-id -o StrictHostKeyChecking=no root@$ip_address; then
+        echo "SSH key successfully copied to root@$ip_address"
+    else
+        echo "Failed to copy SSH key to root@$ip_address"
+        echo "Please check your password and server configuration."
+        exit 1
+    fi
+fi
+
+# SSH into the server and perform additional setup
+ssh root@$ip_address << 'EOF'
+
+# Update package list and upgrade all packages
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+
+# Set up UFW rules (idempotent by nature)
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+
+# Enable UFW if not already enabled
+if ! ufw status | grep -q "Status: active"; then
+    echo "y" | ufw enable
+fi
+
+# Disable password authentication for SSH if not already disabled
+if grep -q "^PasswordAuthentication yes" /etc/ssh/sshd_config; then
+    sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+    systemctl restart sshd
+fi
+
+echo "System updated, firewall rules set, UFW enabled, SSH password authentication disabled, and 'app' user created/updated with sudo access."
+
+EOF
+
+echo "Server bootstrap completed for $ip_address"
