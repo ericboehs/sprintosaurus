@@ -1,0 +1,53 @@
+name: Remove Old Review Apps
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Remove Old Review Apps
+        env:
+          MAX_DAYS: 30
+        run: |
+
+          # Currently assumes you only have one server
+          KAMAL_IP=$(awk '/- [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' config/deploy.staging.yml)
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $KAMAL_IP >> ~/.ssh/known_hosts
+
+          # Kamal didn't have a built in way to see all docker processes
+          ssh root@${KAMAL_IP} "docker ps --format '{{.CreatedAt}}\t{{.Label \"destination\"}}' | grep 'staging-'" |
+          while read -r line; do
+              created_at=$(echo "$line" | awk '{print $1, $2}')
+              destination=$(echo "$line" | awk '{print $5}')
+
+              created_at_clean="${created_at% +*}"
+              created_timestamp=$(date -d "$created_at_clean" +%s)
+              current_timestamp=$(date +%s)
+
+              days_diff=$(( (current_timestamp - created_timestamp) / 86400 ))
+
+              if [ $days_diff -ge $MAX_DAYS ]; then
+                  subdomain=$(echo "$line" | awk '{print $5}' | sed 's/^staging-//')
+                  echo "Removing subdomain: $subdomain"
+                  bin/kamal-subdomain remove "$subdomain"
+              fi
+          done
