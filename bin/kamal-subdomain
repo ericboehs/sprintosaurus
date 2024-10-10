@@ -44,13 +44,13 @@ env:\
     DB_PREFIX: sprintosaurus_staging_'"${SUBDOMAIN}" config/deploy.staging-${SUBDOMAIN}.yml
 
 if [ "$SUBCOMMAND" = "deploy" ]; then
-  kamal deploy -d staging-${SUBDOMAIN}
+  bundle exec kamal deploy -d staging-${SUBDOMAIN}
 elif [ "$SUBCOMMAND" = "remove" ]; then
-  kamal app remove -r web -d staging-${SUBDOMAIN}
-  kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}"
-  kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cache"
-  kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_queue"
-  kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cable"
+  bundle exec kamal app remove -r web -d staging-${SUBDOMAIN}
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cache"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_queue"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cable"
 fi
 
 # Clean up files
