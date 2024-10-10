@@ -6,8 +6,6 @@ class CreateSprints < ActiveRecord::Migration[8.0]
       t.date :start_date
       t.integer :duration
       t.references :project, null: false, foreign_key: true
-      t.datetime :created_at
-      t.datetime :updated_at
 
       t.timestamps
     end

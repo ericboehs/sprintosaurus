@@ -1,15 +1,5 @@
 #!/usr/bin/env sh
 
-# Function to clean up temporary files
-cleanup() {
-    echo "Cleaning up..."
-    rm -f .kamal/secrets.staging-${SUBDOMAIN} config/deploy.staging-${SUBDOMAIN}.yml
-    exit 1
-}
-
-# Set up trap to catch SIGINT (Ctrl+C)
-trap cleanup SIGINT
-
 # Check if both arguments are provided
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <SUBCOMMAND> <SUBDOMAIN>"
@@ -54,7 +44,4 @@ elif [ "$SUBCOMMAND" = "remove" ]; then
 fi
 
 # Clean up files
-cleanup
-
-# Remove the trap
-trap - SIGINT
+rm -f .kamal/secrets.staging-${SUBDOMAIN} config/deploy.staging-${SUBDOMAIN}.yml
