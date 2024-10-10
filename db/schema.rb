@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_09_235742) do
+ActiveRecord::Schema[8.0].define(version: 2024_10_10_034049) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,4 +24,17 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_09_235742) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  create_table "sprints", force: :cascade do |t|
+    t.string "iteration_id"
+    t.string "title"
+    t.date "start_date"
+    t.integer "duration"
+    t.bigint "project_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_sprints_on_project_id"
+  end
+
+  add_foreign_key "sprints", "projects"
 end
