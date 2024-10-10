@@ -17,6 +17,10 @@ registry:
 # Configure builder setup.
 builder:
   arch: amd64
+  cache:
+    type: registry
+    image: ericboehs/sprintosaurus-build-cache
+    options: mode=max
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
@@ -53,6 +57,7 @@ boot:
 accessories:
   db:
     image: postgres:17
+    port: 127.0.0.1:5432:5432
     roles:
       - web
     env:
