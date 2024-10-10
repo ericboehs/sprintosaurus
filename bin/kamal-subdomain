@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+
+# Check if both arguments are provided
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <SUBCOMMAND> <SUBDOMAIN>"
+  echo "SUBCOMMAND should be either 'deploy' or 'remove'"
+  echo "SUBDOMAIN should be a valid number"
+  exit 1
+fi
+
+SUBCOMMAND=$1
+SUBDOMAIN=$2
+
+# Check if the subcommand is valid
+if [ "$SUBCOMMAND" != "deploy" ] && [ "$SUBCOMMAND" != "remove" ]; then
+  echo "Error: SUBCOMMAND must be either 'deploy' or 'remove'"
+  exit 1
+fi
+
+if command -v gsed >/dev/null 2>&1; then
+  SED_CMD="gsed"
+else
+  SED_CMD="sed"
+fi
+
+cp .kamal/secrets.staging .kamal/secrets.staging-${SUBDOMAIN}
+cp config/deploy.staging.yml config/deploy.staging-${SUBDOMAIN}.yml
+
+$SED_CMD -i "s/staging\.sprintosaurus\.com/${SUBDOMAIN}.staging.sprintosaurus.com/" config/deploy.staging-${SUBDOMAIN}.yml
+$SED_CMD -i '$a\
+\
+env:\
+  clear:\
+    DB_PREFIX: sprintosaurus_staging_'"${SUBDOMAIN}" config/deploy.staging-${SUBDOMAIN}.yml
+
+if [ "$SUBCOMMAND" = "deploy" ]; then
+  bundle exec kamal deploy -d staging-${SUBDOMAIN}
+elif [ "$SUBCOMMAND" = "remove" ]; then
+  bundle exec kamal app remove -r web -d staging-${SUBDOMAIN}
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cache"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_queue"
+  bundle exec kamal accessory -d staging exec -i --reuse -v db "/usr/bin/dropdb -U sprintosaurus sprintosaurus_staging_${SUBDOMAIN}_cable"
+fi
+
+# Clean up files
+rm -f .kamal/secrets.staging-${SUBDOMAIN} config/deploy.staging-${SUBDOMAIN}.yml

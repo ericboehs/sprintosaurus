@@ -82,18 +82,18 @@ production:
   primary: &primary_production
     <<: *default
     host: <%= ENV["DB_HOST"] %>
-    database: sprintosaurus_production
+    database: <%= ENV["DB_PREFIX"] || "sprintosaurus_production" %>
     username: sprintosaurus
     password: <%= ENV["POSTGRES_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: sprintosaurus_production_cache
+    database: <%= ENV["DB_PREFIX"] || "sprintosaurus_production" %>_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: sprintosaurus_production_queue
+    database: <%= ENV["DB_PREFIX"] || "sprintosaurus_production" %>_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: sprintosaurus_production_cable
+    database: <%= ENV["DB_PREFIX"] || "sprintosaurus_production" %>_cable
     migrations_paths: db/cable_migrate
